@@ -3,6 +3,7 @@ from db_helper import DbHelper
 import requests
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
+from time import sleep
 
 
 def get_page(URL):
@@ -40,5 +41,13 @@ if __name__ == "__main__":
     # initialising database connection
     db_helper = DbHelper(db_user, db_password, db_hostname, db_name)
 
-    response, time = get_page(Super_URL)
-    get_prices(response, db_helper, time)
+    try:
+        while True:
+            response, time = get_page(Super_URL)
+            print("Inserting dataframe at " + time)
+            get_prices(response, db_helper, time)
+
+            sleep(20)
+    except KeyboardInterrupt:
+        db_helper.close_connection()
+        print("Bye.")
