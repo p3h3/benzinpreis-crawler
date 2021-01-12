@@ -47,7 +47,7 @@ if __name__ == "__main__":
             print("Inserting dataframe at " + time)
             get_prices(response, db_helper, time)
 
-            sleep(20)
+            sleep(25)
     except KeyboardInterrupt:
         db_helper.close_connection()
         print("Bye.")
