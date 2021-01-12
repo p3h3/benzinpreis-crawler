@@ -29,18 +29,17 @@ class DbHelper:
 
         self.db_pool = db_pool
 
-    def insert_datapoint(self, dataframe, trade_pair):
+    def insert_datapoint(self, dataframe, type, db_name):
         # getting db connector and cursor from connection pool
         try:
             db_connector = self.db_pool.get_connection()
             db_cursor = db_connector.cursor()
             # obviously the sql query to insert new dataframe into db
-            query = "INSERT INTO `astrotrader`.`" \
-                    + trade_pair \
-                    + "` (`epochtime`, `timeinterval`, `open`, `close`, `high`, `low`, `change`, `volume`) " \
-                      "VALUES (%s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update `epochtime`=(%s)"
-            values = (dataframe["time"], dataframe["t"], dataframe["o"], dataframe["c"], dataframe["h"], dataframe["l"],
-                      (float(dataframe["c"]) / float(dataframe["o"])) - 1, dataframe["v"], dataframe["time"])
+            query = "INSERT INTO `" + db_name + "`.`" \
+                    + type\
+                    + "` (`name`, `address`, `time`, `price`) " \
+                      "VALUES (%s, %s, %s, %s) on duplicate key update `name`=(%s)"
+            values = (dataframe["name"], dataframe["address"], dataframe["time"], dataframe["price"], dataframe["time"])
 
             try:
                 # trying to execute query
@@ -59,7 +58,7 @@ class DbHelper:
         except mysql.connector.errors.PoolError:
             print("ERROR: Pool exhausted.. trying again in 000ms")
             #sleep(.2)
-            self.insert_datapoint(dataframe, trade_pair)  # trying again recursively
+            self.insert_datapoint(dataframe, type, db_name)  # trying again recursively
 
     # closing all connections
     def close_connection(self):
