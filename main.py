@@ -35,7 +35,7 @@ def get_prices(page, db_helper, time):
             "time": time
         }
 
-        db_helper.insert_datapoint(dataframe, "supere5", db_name)
+        db_helper.insert_datapoint(dataframe, "supere10", db_name)
 
 if __name__ == "__main__":
     # initialising database connection
@@ -43,9 +43,12 @@ if __name__ == "__main__":
 
     try:
         while True:
-            response, time = get_page(Super_URL)
-            print("Inserting dataframe at " + time)
-            get_prices(response, db_helper, time)
+            try:
+                response, time = get_page(Super_URL)
+                print("Inserting dataframe at " + time)
+                get_prices(response, db_helper, time)
+            except:
+                print("Error, carrying on")
 
             sleep(25)
     except KeyboardInterrupt:
