@@ -1,6 +1,7 @@
 import mysql.connector
 from mysql.connector.pooling import MySQLConnectionPool
 
+
 def init_db(mysql_user, mysql_password, mysql_host, mysql_database):
     print("INFO: Opening database..")
     try:
@@ -29,6 +30,33 @@ class DbHelper:
 
         self.db_pool = db_pool
 
+    # getting latest historic data
+    def get_latest_historic_data(self, number):
+        # getting db connector and cursor from connection pool
+        db_connector = self.db_pool.get_connection()
+        db_cursor = db_connector.cursor()
+        # check for valid db connection
+        if not db_connector.is_connected():
+            return
+
+        try:
+            # Collect some data
+            db_cursor.execute("select * from" +
+                              "kraftstoffpreise.supere10" +
+                              "where address='Werner Heisenberg Str. 10'" +
+                              "order by id desc limit " + number + ";")
+            # get data from db_connector
+            data = db_cursor.fetchall()
+            db_connector.commit()
+
+            # closing opened pool connection
+            db_connector.close()
+
+            return data
+
+        except mysql.connector.Error:
+            return
+
     def insert_datapoint(self, dataframe, type, db_name):
         # getting db connector and cursor from connection pool
         try:
@@ -36,7 +64,7 @@ class DbHelper:
             db_cursor = db_connector.cursor()
             # obviously the sql query to insert new dataframe into db
             query = "INSERT INTO `" + db_name + "`.`" \
-                    + type\
+                    + type \
                     + "` (`name`, `address`, `time`, `price`) " \
                       "VALUES (%s, %s, %s, %s) on duplicate key update `name`=(%s)"
             values = (dataframe["name"], dataframe["address"], dataframe["time"], dataframe["price"], dataframe["time"])
@@ -57,7 +85,7 @@ class DbHelper:
 
         except mysql.connector.errors.PoolError:
             print("ERROR: Pool exhausted.. trying again in 000ms")
-            #sleep(.2)
+            # sleep(.2)
             self.insert_datapoint(dataframe, type, db_name)  # trying again recursively
 
     # closing all connections
