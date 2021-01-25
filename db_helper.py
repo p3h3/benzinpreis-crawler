@@ -8,7 +8,7 @@ def init_db(mysql_user, mysql_password, mysql_host, mysql_database):
         db_pool = MySQLConnectionPool(user=mysql_user, password=mysql_password,
                                       host=mysql_host,
                                       database=mysql_database,
-                                      pool_size=32)
+                                      pool_size=10)
 
         if db_pool.get_connection().is_connected():
             print("INFO: Opened database!")
@@ -41,10 +41,10 @@ class DbHelper:
 
         try:
             # Collect some data
-            db_cursor.execute("select * from" +
-                              "kraftstoffpreise.supere10" +
-                              "where address='Werner Heisenberg Str. 10'" +
-                              "order by id desc limit " + number + ";")
+            db_cursor.execute("select `time`, `price` from " +
+                              "kraftstoffpreise.supere10 " +
+                              "where address='Werner Heisenberg Str. 10' " +
+                              "order by id desc limit " + str(number) + ";")
             # get data from db_connector
             data = db_cursor.fetchall()
             db_connector.commit()
