@@ -30,59 +30,59 @@ class DbHelper:
 
         self.db_pool = db_pool
 
-        # getting latest historic data
-        def get_latest_historic_data(self, number):
-            # getting db connector and cursor from connection pool
-            db_connector = self.db_pool.get_connection()
-            db_cursor = db_connector.cursor()
-            # check for valid db connection
-            if not db_connector.is_connected():
-                return
+    # getting latest historic data
+    def get_latest_historic_data(self, number):
+        # getting db connector and cursor from connection pool
+        db_connector = self.db_pool.get_connection()
+        db_cursor = db_connector.cursor()
+        # check for valid db connection
+        if not db_connector.is_connected():
+            return
 
-            try:
-                # Collect some data
-                db_cursor.execute("select `time`, `price` from " +
-                                  "kraftstoffpreise.supere10 " +
-                                  "where address='Werner Heisenberg Str. 10' " +
-                                  "order by id desc limit " + str(number) + ";")
-                # get data from db_connector
-                data = db_cursor.fetchall()
-                db_connector.commit()
+        try:
+            # Collect some data
+            db_cursor.execute("select `time`, `price` from " +
+                              "kraftstoffpreise.supere10 " +
+                              "where address='Leipziger Str. 327' " +
+                              "order by id desc limit " + str(number) + ";")
+            # get data from db_connector
+            data = db_cursor.fetchall()
+            db_connector.commit()
 
-                # closing opened pool connection
-                db_connector.close()
+            # closing opened pool connection
+            db_connector.close()
 
-                return data
-            except mysql.connector.Error:
-                return
+            return data
+        except mysql.connector.Error:
+            return
 
-        # getting latest historic data
-        def get_offset_historic_data(self, number, offset):
-            # getting db connector and cursor from connection pool
-            db_connector = self.db_pool.get_connection()
-            db_cursor = db_connector.cursor()
-            # check for valid db connection
-            if not db_connector.is_connected():
-                return
+    # getting latest historic data
+    def get_offset_historic_data(self, number, offset):
+        # getting db connector and cursor from connection pool
+        db_connector = self.db_pool.get_connection()
+        db_cursor = db_connector.cursor()
+        # check for valid db connection
+        if not db_connector.is_connected():
+            return
 
-            try:
-                # Collect some data
-                db_cursor.execute("select `time`, `price` from " +
-                                  "kraftstoffpreise.supere10 " +
-                                  "where address='Werner Heisenberg Str. 10' " +
-                                  "order by id desc limit " + str(number) +
-                                  " offset " + str(offset) + ";")
-                # get data from db_connector
-                data = db_cursor.fetchall()
-                db_connector.commit()
+        try:
+            # Collect some data
+            db_cursor.execute("select `time`, `price` from " +
+                              "kraftstoffpreise.supere10 " +
+                              "where address='Leipziger Str. 327' " +
+                              "order by id desc limit " + str(number) +
+                              " offset " + str(offset) + ";")
+            # get data from db_connector
+            data = db_cursor.fetchall()
+            db_connector.commit()
 
-                # closing opened pool connection
-                db_connector.close()
+            # closing opened pool connection
+            db_connector.close()
 
-                return data
+            return data
 
-            except mysql.connector.Error:
-                return
+        except mysql.connector.Error:
+            return
 
     def insert_datapoint(self, dataframe, type, db_name):
         # getting db connector and cursor from connection pool
