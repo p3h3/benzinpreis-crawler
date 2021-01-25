@@ -21,7 +21,7 @@ app.layout = html.Div(
         dcc.Graph(id='update-graph'),
         dcc.Interval(
             id='graph-interval-component',
-            interval=2000,
+            interval=20000,
             n_intervals=0
         ),
         dcc.Interval(
@@ -48,20 +48,38 @@ def update_graph_live(n):
 
     try:
         # Collect historic data
-        data = list(reversed(db_helper.get_latest_historic_data(500)))
+        data = list(reversed(db_helper.get_latest_historic_data(3456)))
+        older_data = list(reversed(db_helper.get_offset_historic_data(3456, 3456)))
 
         times = [item[0] for item in data]
         prices = [float(item[1]) for item in data]
 
+        older_times = [item[0] for item in older_data]
+        older_prices = [float(item[1]) for item in older_data]
+
+        # convert to different time format - understandable for plotly
+        datetimes = [datetime.strptime(item, '%d/%m/%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+                     for item in times]
+        older_datetimes = [datetime.strptime(item, '%d/%m/%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+                     for item in older_times]
 
         # creating traces [::3] means only every third value
         fig.append_trace({
-            'x': times[::3],
+            'x': datetimes[::3],
             'y': prices[::3],
-            'name': 'Market price',
+            'name': 'Price',
             'mode': 'lines+markers',
             'type': 'scatter'
         }, 1, 1)
+
+        # creating traces [::3] means only every third value
+        fig.append_trace({
+            'x': older_datetimes[::3],
+            'y': older_prices[::3],
+            'name': 'Older Price',
+            'mode': 'lines+markers',
+            'type': 'scatter'
+        }, 2, 1)
 
     except KeyboardInterrupt:
         print("ERROR: while executing database select query")
