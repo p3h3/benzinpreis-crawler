@@ -8,7 +8,7 @@ from time import sleep
 
 def get_page(URL):
     response = requests.get(URL)
-    if (response.status_code == 200):
+    if response.status_code == 200:
         now = datetime.now()
         time = now.strftime("%d/%m/%Y %H:%M:%S")
         return response.content, time
@@ -36,6 +36,7 @@ def get_prices(page, db_helper, time):
         }
 
         db_helper.insert_datapoint(dataframe, "supere10", db_name)
+
 
 if __name__ == "__main__":
     # initialising database connection
