@@ -3,6 +3,22 @@ import numpy as np
 from datetime import datetime
 from db_helper import DbHelper
 from config import *
+import pickle
+
+offline = True
+
+
+def save_load(opt, obj=""):
+    if opt == "save":
+        # Saving the objects:
+        with open('data.pkl', 'wb') as f:
+            pickle.dump(obj, f)
+            print('data saved')
+    elif opt == "load":
+        with open('data.pkl', "rb") as f:
+            return pickle.load(f)
+    else:
+        print('Invalid saveLoad option')
 
 
 # calculating percentage differences between two arrays and outputting them as a new array
@@ -17,9 +33,13 @@ def calculate_percentage_difference(values, average):
 
 
 if __name__ == "__main__":
-    # get data from db
-    db_helper = DbHelper(db_user, db_password, db_hostname, db_name)
-    data = list(reversed(db_helper.get_latest_historic_data(1000000)))
+    if not offline:
+        # get data from db
+        db_helper = DbHelper(db_user, db_password, db_hostname, db_name)
+        data = list(reversed(db_helper.get_latest_historic_data(1000000)))
+        save_load("save", data)
+    else:
+        data = save_load("load")
 
     times = np.array([item[0] for item in data])
     prices = np.array([item[1] for item in data])
