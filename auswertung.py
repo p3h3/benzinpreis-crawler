@@ -1,3 +1,4 @@
+import math
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
@@ -7,6 +8,25 @@ import pickle
 
 offline = True
 
+color_lookup = [
+    "red",
+    "orange",
+    "yellow",
+    "greenyellow",
+    "green",
+    "cyan",
+    "blue",
+    "magenta"
+]
+
+
+def find_nearest_index(array, value):
+    idx = np.searchsorted(array, value, side="left")
+    if idx > 0 and (idx == len(array) or math.fabs(value - array[idx-1]) < math.fabs(value - array[idx])):
+        return idx-1
+    else:
+        return idx
+
 
 def save_load(opt, obj=""):
     if opt == "save":
@@ -15,7 +35,7 @@ def save_load(opt, obj=""):
             pickle.dump(obj, f)
             print('data saved')
     elif opt == "load":
-        with open('data.pkl', "rb") as f:
+        with open('data_e5.pkl', "rb") as f:
             return pickle.load(f)
     else:
         print('Invalid saveLoad option')
@@ -40,6 +60,7 @@ if __name__ == "__main__":
         save_load("save", data)
     else:
         data = save_load("load")
+        print("first:", data[0][0])
 
     times = np.array([item[0] for item in data])
     prices = np.array([item[1] for item in data])
@@ -61,30 +82,42 @@ if __name__ == "__main__":
         datetime_this = datetime.strptime(times[i], '%d/%m/%Y %H:%M:%S')
         datetime_next = datetime.strptime(times[i + 1], '%d/%m/%Y %H:%M:%S')
 
-        if datetime_this.hour != datetime_next.hour:
-            print(datetime.timestamp(datetime_this) % time_unit_size_s, " = ", datetime_this.strftime("%A %H:%M"))
+        #if datetime_this.hour != datetime_next.hour:
+        #    print(datetime.timestamp(datetime_this) % time_unit_size_s, " = ", datetime_this.strftime("%A %H:%M"))
 
         # cut out data points where price didn't change
         if prices[i] != prices[i + 1]:  # and 15 < datetime_this.hour < 24:
             optimised_prices.append(prices[i])
-            optimised_times.append(datetime.timestamp(datetime_this) % time_unit_size_s)
+            optimised_times.append(datetime.timestamp(datetime_this))
             optimised_prices.append(prices[i + 1])
-            optimised_times.append(datetime.timestamp(datetime_next) % time_unit_size_s)
+            optimised_times.append(datetime.timestamp(datetime_next))
 
     last_time_unit = 0
 
     for i in range(0, len(optimised_times) - 1):
-        timestamp_this = optimised_times[i]
-        timestamp_next = optimised_times[i + 1]
+        timestamp_this = optimised_times[i] % time_unit_size_s
+        timestamp_next = optimised_times[i + 1] % time_unit_size_s
         if timestamp_next - timestamp_this < 0:
-            time_unit_times = optimised_times[last_time_unit:i]
-            time_unit_prices = optimised_prices[last_time_unit:i]
+            weekday = datetime.fromtimestamp(optimised_times[i+1]).weekday()
+            time_unit_times = np.array(optimised_times[last_time_unit:i]) % time_unit_size_s
+            time_unit_prices = np.array(optimised_prices[last_time_unit:i]) % time_unit_size_s
 
-            average = float(sum(time_unit_prices) / len(time_unit_prices))
+            weekstart = int(optimised_times[i])
+            while (datetime.fromtimestamp(weekstart).weekday() != 0):
+                weekstart -= 300
+
+            weekprices = optimised_prices[find_nearest_index(optimised_times, weekstart)
+                                          :
+                                          find_nearest_index(optimised_times, weekstart + (86400 * 7))]
+            average = float(sum(weekprices) / len(weekprices))
 
             time_unit_percentages = calculate_percentage_difference(time_unit_prices, average)
 
-            ax.plot(time_unit_times, time_unit_percentages)
+            start = find_nearest_index(time_unit_times, 63000)
+            end = find_nearest_index(time_unit_times, 66000)
+
+            # every day has a different color
+            ax.plot(time_unit_times, time_unit_percentages, color=color_lookup[weekday])
 
             last_time_unit = i + 1
 
