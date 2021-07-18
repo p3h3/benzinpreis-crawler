@@ -42,7 +42,7 @@ class DbHelper:
         try:
             # Collect some data
             db_cursor.execute("select `time`, `price` from " +
-                              "kraftstoffpreise.diesel " +
+                              "kraftstoffpreise.supere10 " +
                               "where address='Leipziger Str. 327' " +
                               "order by id desc limit " + str(number) + ";")
             # get data from db_connector
@@ -69,7 +69,7 @@ class DbHelper:
             # Collect some data
             db_cursor.execute("select `time`, `price` from " +
                               "kraftstoffpreise.supere10 " +
-                              "where address='Leipziger Str. 327' " +
+                              "where address='Wolfhager Strasse 276' " +
                               "order by id desc limit " + str(number) +
                               " offset " + str(offset) + ";")
             # get data from db_connector

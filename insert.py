@@ -21,21 +21,24 @@ def get_prices(page, db_helper, time):
     sections = bs(str(soup.find_all("div", {'class': sort_class})[0]), features="html.parser").find_all("section")
 
     for e in sections:
-        preis = float(str(e.find_all("span", {'class': "e-p1"})).split("<")[1].split(">")[1] \
-                      + str(e.find_all("span", {'class': "e-p2"})).split("<")[1].split(">")[1])
+        try:
+            preis = float(str(e.find_all("span", {'class': "e-p1"})).split("<")[1].split(">")[1] \
+                          + str(e.find_all("span", {'class': "e-p2"})).split("<")[1].split(">")[1])
 
-        address = str(e.find_all("div", {'class': "e-content"})).split("<")[5].split(">")[1]
+            address = str(e.find_all("div", {'class': "e-content"})).split("<")[5].split(">")[1]
 
-        name = str(e.find_all("div", {'class': "e-content"})).split("<")[2].split(">")[1]
+            name = str(e.find_all("div", {'class': "e-content"})).split("<")[2].split(">")[1]
 
-        dataframe = {
-            "price": preis,
-            "name": name,
-            "address": address,
-            "time": time
-        }
+            dataframe = {
+                "price": preis,
+                "name": name,
+                "address": address,
+                "time": time
+            }
 
-        db_helper.insert_datapoint(dataframe, "supere10", db_name)
+            db_helper.insert_datapoint(dataframe, "supere10", db_name)
+        except IndexError:
+            print("ERROR: Couldn't extract data from gathered website")
 
 
 if __name__ == "__main__":

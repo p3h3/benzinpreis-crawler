@@ -6,7 +6,7 @@ from db_helper import DbHelper
 from config import *
 import pickle
 
-offline = True
+offline = False
 
 color_lookup = [
     "red",
@@ -15,8 +15,7 @@ color_lookup = [
     "greenyellow",
     "green",
     "cyan",
-    "blue",
-    "magenta"
+    "blue"
 ]
 
 
@@ -31,11 +30,11 @@ def find_nearest_index(array, value):
 def save_load(opt, obj=""):
     if opt == "save":
         # Saving the objects:
-        with open('data.pkl', 'wb') as f:
+        with open('data_e10.pkl', 'wb') as f:
             pickle.dump(obj, f)
             print('data saved')
     elif opt == "load":
-        with open('data_e5.pkl', "rb") as f:
+        with open('data_e10.pkl', "rb") as f:
             return pickle.load(f)
     else:
         print('Invalid saveLoad option')
@@ -56,7 +55,7 @@ if __name__ == "__main__":
     if not offline:
         # get data from db
         db_helper = DbHelper(db_user, db_password, db_hostname, db_name)
-        data = list(reversed(db_helper.get_latest_historic_data(1000000)))
+        data = list(reversed(db_helper.get_latest_historic_data(5000)))
         save_load("save", data)
     else:
         data = save_load("load")
@@ -103,13 +102,13 @@ if __name__ == "__main__":
             time_unit_prices = np.array(optimised_prices[last_time_unit:i]) % time_unit_size_s
 
             weekstart = int(optimised_times[i])
-            while (datetime.fromtimestamp(weekstart).weekday() != 0):
+            while datetime.fromtimestamp(weekstart).weekday() != 0:
                 weekstart -= 300
 
             weekprices = optimised_prices[find_nearest_index(optimised_times, weekstart)
                                           :
                                           find_nearest_index(optimised_times, weekstart + (86400 * 7))]
-            average = float(sum(weekprices) / len(weekprices))
+            average = float(sum(time_unit_prices) / len(time_unit_prices))
 
             time_unit_percentages = calculate_percentage_difference(time_unit_prices, average)
 
@@ -117,6 +116,7 @@ if __name__ == "__main__":
             end = find_nearest_index(time_unit_times, 66000)
 
             # every day has a different color
+            #if weekday == 3:
             ax.plot(time_unit_times, time_unit_percentages, color=color_lookup[weekday])
 
             last_time_unit = i + 1
